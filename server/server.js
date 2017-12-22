@@ -22,7 +22,22 @@ io.on('connection', (socket) => {
   socket.on('createMessage', (message) => {
     console.log('new message received', message);
 
-    socket.emit('newMessage', {message});
+    //Emitting an event to a specific user who's connected or caused this event
+    socket.emit('newMessage', {
+      from: 'Admin',
+      text: 'Welcome. User 1'
+    });
+
+    //Emitting an event to all the connected users except the connected user or the user who caused this event
+    socket.broadcast.emit('newMessage', {
+      from: 'Admin',
+      text: 'User 1 has joined the chat.'
+    });
+
+    //Here we emit event to only the user connected as we're using socket
+    //socket.emit('newMessage', {message});
+    //Instead we use IO to emit event to all the users connected
+    io.emit('newMessage', {message});
   });
 
   socket.on('disconnect', () => {
