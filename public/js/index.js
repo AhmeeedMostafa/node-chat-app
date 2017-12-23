@@ -30,7 +30,7 @@ socket.on('newMessage', function (message) {
   var html = Mustache.render(template, {
     from: message.from,
     text: message.text,
-    createdAt: message.createdAt,
+    createdAt: time
   });
 
   jQuery('#messages-box').append(html);
@@ -64,7 +64,7 @@ socket.on('newLocationMessage', function (message) {
   var html = Mustache.render(template, {
     from: message.from,
     url: message.url,
-    createdAt: message.createdAt
+    createdAt: time
   });
 
   jQuery('#messages-box').append(html);
