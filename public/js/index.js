@@ -25,11 +25,15 @@ jQuery('#chat-form').on('submit', function (e) {
 });
 
 socket.on('newMessage', function (message) {
-  var li = jQuery('<li></li>');
   var time = moment(message.createdAt).format('h:mm a');
+  var template = jQuery('#message-template').html();
+  var html = Mustache.render(template, {
+    from: message.from,
+    text: message.text,
+    createdAt: message.createdAt,
+  });
 
-  li.text(`${message.from} ${time}: ${message.text}`);
-  jQuery('#messages-box').append(li);
+  jQuery('#messages-box').append(html);
 });
 
 var sendLocationBTN = jQuery('#send-location');
@@ -55,12 +59,13 @@ sendLocationBTN.on('click', function () {
 });
 
 socket.on('newLocationMessage', function (message) {
-  var li = jQuery('<li></li>');
-  var a = jQuery('<a target="_blank">My current location</a>');
   var time = moment(message.createdAt).format('h:mm a');
+  var template = jQuery('#location-message-template').html();
+  var html = Mustache.render(template, {
+    from: message.from,
+    url: message.url,
+    createdAt: message.createdAt
+  });
 
-  li.text(`${message.from} ${time}: `);
-  a.attr('href', message.url);
-  li.append(a);
-  jQuery('#messages-box').append(li);
+  jQuery('#messages-box').append(html);
 });
