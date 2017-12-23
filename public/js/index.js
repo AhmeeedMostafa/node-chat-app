@@ -26,7 +26,9 @@ jQuery('#chat-form').on('submit', function (e) {
 
 socket.on('newMessage', function (message) {
   var li = jQuery('<li></li>');
-  li.text(`${message.from}: ${message.text}`);
+  var time = moment(message.createdAt).format('h:mm a');
+
+  li.text(`${message.from} ${time}: ${message.text}`);
   jQuery('#messages-box').append(li);
 });
 
@@ -55,8 +57,9 @@ sendLocationBTN.on('click', function () {
 socket.on('newLocationMessage', function (message) {
   var li = jQuery('<li></li>');
   var a = jQuery('<a target="_blank">My current location</a>');
+  var time = moment(message.createdAt).format('h:mm a');
 
-  li.text(`${message.from}: `);
+  li.text(`${message.from} ${time}: `);
   a.attr('href', message.url);
   li.append(a);
   jQuery('#messages-box').append(li);
