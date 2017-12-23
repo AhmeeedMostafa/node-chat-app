@@ -7,7 +7,7 @@ const http = require('http');
 const publicPath = path.join(__dirname, '../public');
 const port = process.env.PORT || 3000;
 const app = express();
-const {generateMessage} = require('./utils/message');
+const {generateMessage, generateLocationMessage} = require('./utils/message');
 //We choose http to build the server to be able to use & communitcate socket.io module
 //( here we'll use http to build the server with help of express settings)
 const server = http.createServer(app);
@@ -29,6 +29,7 @@ io.on('connection', (socket) => {
 
     io.emit('newMessage', message);
 
+    callback();
     //Emitting an event to a specific user who's connected or caused this event
     // socket.emit('newMessage', {
     //   from: 'Admin',
@@ -46,6 +47,12 @@ io.on('connection', (socket) => {
     //Instead we use IO to emit event to all the users connected
   });
 
+  socket.on('createLocationMessage', (coordinates, callback) => {
+    if (!coordinates) {
+      return callback('Something error happended');
+    }
+    io.emit('newLocationMessage', generateLocationMessage('Admin', coordinates.latitude, coordinates.longitude));
+  });
   socket.on('disconnect', () => {
     console.log('User disconnected!')
   });
