@@ -10,68 +10,49 @@ socket.on('connect', function () {
       return window.location.href = '/index.html';
     }
   });
-
-  var writingStatusDiv = jQuery('#writing-status');
-  var writingTimer, statusSent = false;
-  var messageInput = jQuery('[name=chat-message]');
-
-  messageInput.keyup(function (e) {
-    clearTimeout(writingTimer);
-
-    if (!statusSent) {
-      if (e.keyCode === 8 || e.keyCode === 46) {
-        socket.emit('createWritingStatus', '<span style="color: red;">Erasing...</span>');
-      }
-      statusSent = true;
-    }
-    //3 seconds
-    writingTimer = setTimeout(doneWriting, 3000);
-  });
-
-  messageInput.keypress(function () {
-    clearTimeout(writingTimer);
-
-    if (!statusSent) {
-      socket.emit('createWritingStatus', '<span style="color: green;">Typing...</span>');
-      statusSent = true;
-    }
-  });
-
-  socket.on('newWritingStatus', function (status) {
-    if (status === undefined) {
-      writingStatusDiv.html('');
-    } else {
-      if (writingStatusDiv.html() === '')
-        writingStatusDiv.html(status);
-      else
-        writingStatusDiv.html(writingStatusDiv.html() + ', ' + status);
-    }
-  });
 });
 
 socket.on('disconnect', function () {
-  console.log('Disconnedted from the server!');
+  console.log('Disconnected from the server!');
 });
 
-function doneWriting() {
-  socket.emit('createWritingStatus');
-  statusSent = false;
-}
+var writingStatusDiv = jQuery('#writing-status');
+var statusSent = false;
+var messageInput = jQuery('[name=chat-message]');
+var writingTimer;
 
-function scrollToBottom () {
-  var messagesBox = jQuery('#messages-box');
-  var newMessage = messagesBox.children('li:last-child');
-
-  var scrollTopHeight = messagesBox.prop('scrollTop');
-  var clientHeight = messagesBox.prop('clientHeight');
-  var scrollHeight = messagesBox.prop('scrollHeight');
-  var newMessageHeight = newMessage.innerHeight();
-  var lastMessageHeight = newMessage.prev().innerHeight();
-
-  if (clientHeight + scrollTopHeight + newMessageHeight + lastMessageHeight >= scrollHeight) {
-    messagesBox.scrollTop(scrollHeight);
+messageInput.keydown(function (e) {
+  if (!statusSent && (e.keyCode === 8 || e.keyCode === 46)) {
+    socket.emit('createWritingStatus', '<span style="color: red;">Erasing...</span>');
+    statusSent = true;
+    //.5 Second
+    writingTimer = setTimeout(doneWriting, 500);
+    if (messageInput.val().length === 0) {
+      doneWriting();
+    }
   }
-}
+});
+
+messageInput.keypress(function () {
+  clearTimeout(writingTimer);
+  if (!statusSent) {
+    socket.emit('createWritingStatus', '<span style="color: green;">Typing...</span>');
+    statusSent = true;
+  }
+  //.5 Second
+  writingTimer = setTimeout(doneWriting, 500);
+});
+
+socket.on('newWritingStatus', function (status) {
+  if (status === undefined) {
+    writingStatusDiv.html('');
+  } else {
+    if (writingStatusDiv.html() === '')
+      writingStatusDiv.html(status);
+    else
+      writingStatusDiv.html(writingStatusDiv.html() + ', ' + status);
+  }
+});
 
 jQuery('#chat-form').on('submit', function (e) {
   //Prevent refereshing
@@ -80,6 +61,8 @@ jQuery('#chat-form').on('submit', function (e) {
   var msgBox = jQuery('[name=chat-message]');
 
   if (msgBox.val() !== '') {
+    doneWriting();
+
     socket.emit('createMessage', {
       text: msgBox.val()
     }, function (err) {
@@ -89,7 +72,6 @@ jQuery('#chat-form').on('submit', function (e) {
         msgBox.val('');
       }
     });
-    doneWriting();
   }
 });
 
@@ -151,3 +133,24 @@ socket.on('updateUsersList', function (users) {
 
   jQuery('#users').html(ol);
 });
+
+function doneWriting() {
+  clearTimeout(writingTimer);
+  statusSent = false;
+  socket.emit('createWritingStatus');
+}
+
+function scrollToBottom () {
+  var messagesBox = jQuery('#messages-box');
+  var newMessage = messagesBox.children('li:last-child');
+
+  var scrollTopHeight = messagesBox.prop('scrollTop');
+  var clientHeight = messagesBox.prop('clientHeight');
+  var scrollHeight = messagesBox.prop('scrollHeight');
+  var newMessageHeight = newMessage.innerHeight();
+  var lastMessageHeight = newMessage.prev().innerHeight();
+
+  if (clientHeight + scrollTopHeight + newMessageHeight + lastMessageHeight >= scrollHeight) {
+    messagesBox.scrollTop(scrollHeight);
+  }
+}
