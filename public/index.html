@@ -18,12 +18,16 @@
         </div>
         <div class="form-field">
           <label>Room name</label>
-          <input type="text" name="room" />
+          <input type="text" list="existing-rooms" name="room" id="room-name" />
+          <datalist id="existing-rooms">
+          </datalist>
         </div>
         <div class="form-field">
           <button>Join</button>
         </div>
       </form>
     </div>
+    <script src="/socket.io/socket.io.js" type="text/javascript"></script>
+    <script src="/js/index.js" type="text/javascript"></script>
   </body>
 </html>

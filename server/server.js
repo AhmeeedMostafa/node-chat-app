@@ -27,6 +27,7 @@ io.on('connection', (socket) => {
   //
   //Emitting an event to all the connected users except the connected user or the user who caused this event
   // socket.broadcast.emit('newMessage', generateMessage('Admin', 'New user joined the chat.'));
+  socket.emit('existingRooms', users.getRoomsList());
 
   socket.on('createMessage', (message, callback) => {
     emitMessageToChat(users, io, socket.id, message.text) ? callback() : callback('Something went wrong, please reload the page & try again.');
@@ -50,6 +51,8 @@ io.on('connection', (socket) => {
   socket.on('join', (params, callback) => {
     if (!isRealString(params.name) || !isRealString(params.room)) {
       return callback('Please, Enter your name & chat room.');
+    } else if (users.isNameExists(params) || params.name.toLowerCase() === 'admin') {
+      return callback('Your name is taken, choose another one');
     }
 
     //Create & join a room with the specified name

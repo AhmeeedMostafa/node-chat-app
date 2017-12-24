@@ -29,6 +29,17 @@ class Users {
     //.map returns an array of the specified field so, here an array of users names only will be returned
     return filteredUsers.map((user) => user.name);
   }
+
+  isNameExists (user) {
+    return this.users.filter((filteredUser) => filteredUser.name.toLowerCase() === user.name.toLowerCase() && filteredUser.room === user.room).length >= 1;
+  }
+
+  getRoomsList () {
+    var roomsSet = new Set(this.users.map((user) => user.room));
+    var rooms = [];
+    roomsSet.forEach((room) => rooms.push(room));
+    return rooms;
+  }
 }
 
 module.exports = {Users}
