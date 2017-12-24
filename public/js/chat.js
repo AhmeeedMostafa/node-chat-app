@@ -1,7 +1,14 @@
 var socket = io();
 
 socket.on('connect', function () {
-  console.log('Connected to the server.');
+  var params = jQuery.deparam(window.location.search);
+
+  socket.emit('join', params, function (err) {
+    if (err) {
+      alert(err);
+      window.location.href = '/index.html';
+    }
+  });
 });
 
 socket.on('disconnect', function () {
@@ -31,10 +38,13 @@ jQuery('#chat-form').on('submit', function (e) {
 
   if (msgBox.val() !== '') {
     socket.emit('createMessage', {
-      from: 'User',
       text: msgBox.val()
-    }, function () {
-      msgBox.val('');
+    }, function (err) {
+      if (err) {
+        alert(err);
+      } else {
+        msgBox.val('');
+      }
     });
   }
 });
@@ -71,6 +81,7 @@ sendLocationBTN.on('click', function () {
     sendLocationBTN.removeAttr('disabled').removeAttr('style').text('Send location');
   }, function () {
     alert('Unable to fetch your location.');
+    sendLocationBTN.removeAttr('disabled').removeAttr('style').text('Send location');
   });
 });
 
@@ -85,4 +96,14 @@ socket.on('newLocationMessage', function (message) {
 
   jQuery('#messages-box').append(html);
   scrollToBottom();
+});
+
+socket.on('updateUsersList', function (users) {
+  var ol = jQuery('<ol></ol>');
+
+  users.forEach(function (user) {
+    ol.append(jQuery('<li></li>').text(user));
+  });
+
+  jQuery('#users').html(ol);
 });
