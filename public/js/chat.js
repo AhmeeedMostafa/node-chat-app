@@ -10,11 +10,53 @@ socket.on('connect', function () {
       return window.location.href = '/index.html';
     }
   });
+
+  var writingStatusDiv = jQuery('#writing-status');
+  var writingTimer, statusSent = false;
+  var messageInput = jQuery('[name=chat-message]');
+
+  messageInput.keyup(function (e) {
+    clearTimeout(writingTimer);
+
+    if (!statusSent) {
+      if (e.keyCode === 8 || e.keyCode === 46) {
+        socket.emit('createWritingStatus', '<span style="color: red;">Erasing...</span>');
+      }
+      statusSent = true;
+    }
+    //3 seconds
+    writingTimer = setTimeout(doneWriting, 3000);
+  });
+
+  messageInput.keypress(function () {
+    clearTimeout(writingTimer);
+
+    if (!statusSent) {
+      socket.emit('createWritingStatus', '<span style="color: green;">Typing...</span>');
+      statusSent = true;
+    }
+  });
+
+  socket.on('newWritingStatus', function (status) {
+    if (status === undefined) {
+      writingStatusDiv.html('');
+    } else {
+      if (writingStatusDiv.html() === '')
+        writingStatusDiv.html(status);
+      else
+        writingStatusDiv.html(writingStatusDiv.html() + ', ' + status);
+    }
+  });
 });
 
 socket.on('disconnect', function () {
   console.log('Disconnedted from the server!');
 });
+
+function doneWriting() {
+  socket.emit('createWritingStatus');
+  statusSent = false;
+}
 
 function scrollToBottom () {
   var messagesBox = jQuery('#messages-box');
@@ -47,6 +89,7 @@ jQuery('#chat-form').on('submit', function (e) {
         msgBox.val('');
       }
     });
+    doneWriting();
   }
 });
 

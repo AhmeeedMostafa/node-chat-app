@@ -88,6 +88,14 @@ io.on('connection', (socket) => {
       io.to(user.room).emit('newMessage', generateMessage('Admin', `${user.name} has left the chat.`));
     }
   });
+
+  socket.on('createWritingStatus', (status) => {
+    var user = users.getUser(socket.id);
+    if (status)
+      socket.broadcast.to(user.room).emit('newWritingStatus', `${user.name} is ${status}`);
+    else
+      socket.broadcast.to(user.room).emit('newWritingStatus');
+  });
 });
 
 //Use server instead of app to use the http module in creating the server
